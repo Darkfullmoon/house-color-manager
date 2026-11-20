@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "macros.html" import icon with context %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+<div class="auth-card card">
+  <div class="auth-brand">
+    <span class="brand-mark">{{ icon('house', 20) }}</span>
+    <div>
+      <h1>House Colors</h1>
+      <p class="muted small">Log in to continue</p>
+    </div>
+  </div>
+  {% if error %}<div class="alert alert-error" role="alert">{{ error }}</div>{% endif %}
+  <form method="post" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field">
+      <label for="username">Username</label>
+      <input id="username" name="username" class="input input-code" maxlength="3" value="{{ username }}"
+             placeholder="ABC" autocomplete="username" autocapitalize="characters" required autofocus>
+      <span class="muted small">3 uppercase English letters</span>
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" class="input" autocomplete="current-password" required>
+      <span class="muted small">New users: use the default password from the administrator, then set your own.</span>
+    </div>
+    <button class="btn btn-primary btn-block" type="submit">Log in</button>
+  </form>
+  <p class="muted small auth-foot">Forgot your password? Ask the administrator to reset it.</p>
+</div>
+{% endblock %}

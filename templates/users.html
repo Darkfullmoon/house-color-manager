@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% from "macros.html" import icon with context %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<div class="page-narrow">
+  <div class="page-header">
+    <div>
+      <h1>Users</h1>
+      <p class="muted">New users log in with the default password <strong class="mono">{{ default_password }}</strong>, then must set their own (8+ characters with an uppercase letter, a digit and a special character).</p>
+    </div>
+  </div>
+
+  <form class="card form-card inline-form" id="user-form" novalidate>
+    <div class="field field-code">
+      <label for="user-username">Username</label>
+      <input id="user-username" name="username" class="input input-code" maxlength="3" placeholder="ABC" autocapitalize="characters">
+    </div>
+    <div class="field grow">
+      <label for="user-full-name">Full name</label>
+      <input id="user-full-name" name="full_name" class="input" maxlength="120" placeholder="e.g. Somchai Jaidee">
+    </div>
+    <button class="btn btn-primary" type="submit">{{ icon('plus') }} Add user</button>
+  </form>
+
+  <div class="card table-card">
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr><th>Username</th><th>Full name</th><th>Status</th><th class="col-actions"><span class="sr-only">Actions</span></th></tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr data-user-id="{{ u.id }}" data-username="{{ u.username }}" data-full-name="{{ u.full_name }}" data-active="{{ 'true' if u.active else 'false' }}">
+            <td class="strong mono">{{ u.username }}</td>
+            <td>{{ u.full_name }}</td>
+            <td>
+              {% if not u.active %}<span class="badge badge-neutral">Disabled</span>
+              {% elif u.must_change_password %}<span class="badge badge-warn">Must set password</span>
+              {% else %}<span class="badge">Active</span>{% endif %}
+            </td>
+            <td class="col-actions user-actions">
+              <button class="btn btn-sm js-rename-user" type="button">{{ icon('edit', 14) }} Rename</button>
+              <button class="btn btn-sm js-reset-user" type="button">{{ icon('key', 14) }} Reset password</button>
+              <button class="btn btn-sm js-toggle-user" type="button">{{ 'Disable' if u.active else 'Enable' }}</button>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="muted table-empty">No users yet. Add the first one above.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/users.js') }}"></script>
+{% endblock %}
