@@ -1,165 +1,166 @@
 # House Color Management System
 
-Upload house photos, click on them to pick the exact paint colors, record the details (name, RGB/HEX, manufacturer, model), then search the records and export them to Excel.
+ระบบจัดการสีบ้าน: อัปโหลดรูปบ้าน คลิกบนรูปเพื่อดึงค่าสีจริงแบบแม่นยำระดับพิกเซล บันทึกรายละเอียดสี (ชื่อสี, RGB/HEX, ยี่ห้อ, รุ่น) แล้วค้นหาและส่งออกเป็น Excel ได้
 
-![Dashboard](docs/screenshots/dashboard.png)
+![หน้าภาพรวม](docs/screenshots/dashboard.png)
 
-| Pick a color from the photo (pixel loupe) | Save it with RGB / HEX, manufacturer and model |
+| เลือกสีจากรูป (มีแว่นขยายพิกเซล) | บันทึกสีพร้อม RGB / HEX ยี่ห้อ และรุ่น |
 |---|---|
-| ![House detail](docs/screenshots/house-detail.png) | ![Add color](docs/screenshots/pick-color.png) |
+| ![หน้ารายละเอียดบ้าน](docs/screenshots/house-detail.png) | ![ฟอร์มเพิ่มสี](docs/screenshots/pick-color.png) |
 
-![All colors](docs/screenshots/all-colors.png)
+![สีทั้งหมด](docs/screenshots/all-colors.png)
 
-*Screenshots use generated sample data.*
+*ภาพหน้าจอใช้ข้อมูลตัวอย่างที่สร้างขึ้น*
 
-| Layer | Tech | Where it runs |
-|-------|------|---------------|
-| App (pages + API) | Python 3.12, Flask 3, Jinja2 templates, Flask-SQLAlchemy, Pillow, openpyxl | On your machine: `python app.py` |
-| Browser scripts | Plain JavaScript modules (no Node, no build step) | Served from `static/` |
-| Database | MySQL 8.4 + phpMyAdmin | Docker |
+| ส่วน | เทคโนโลยี | รันที่ไหน |
+|------|-----------|-----------|
+| แอป (หน้าเว็บ + API) | Python 3.12, Flask 3, Jinja2, Flask-SQLAlchemy, Pillow, openpyxl | บนเครื่อง: `python app.py` |
+| สคริปต์ฝั่งเบราว์เซอร์ | JavaScript ธรรมดา (ไม่ใช้ Node ไม่ต้อง build) | ส่งจากโฟลเดอร์ `static/` |
+| ฐานข้อมูล | MySQL 8.4 + phpMyAdmin | Docker |
 
-## Quick start (Windows PowerShell)
+## เริ่มใช้งาน (Windows PowerShell)
 
 ```powershell
 git clone https://github.com/Darkfullmoon/house-color-manager.git
 cd house-color-manager
 
-# 1. Database (Docker: MySQL + phpMyAdmin only)
-copy .env.example .env               # first time only, then change the passwords
+# 1. ฐานข้อมูล (Docker รันแค่ MySQL + phpMyAdmin)
+copy .env.example .env               # ทำครั้งแรกครั้งเดียว แล้วแก้รหัสผ่านในไฟล์
 docker compose up -d
 
-# 2. App
-.\venv\Scripts\Activate.ps1          # first time: python -m venv venv
-pip install -r requirements.txt     # first time only
+# 2. แอป
+python -m venv venv                  # ครั้งแรกเท่านั้น
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt      # ครั้งแรกเท่านั้น
 python app.py
 ```
 
-| URL | What |
-|-----|------|
-| http://localhost:5000 | The application (also `http://<your-LAN-IP>:5000` from other devices) |
-| http://localhost:8080 | phpMyAdmin (server `mysql`, user/password from `.env`) |
-| localhost:3321 | MySQL, for external clients |
+| URL | คืออะไร |
+|-----|---------|
+| http://localhost:5000 | ตัวแอป (เครื่องอื่นในวง LAN เข้าได้ที่ `http://<IP-เครื่องนี้>:5000`) |
+| http://localhost:8080 | phpMyAdmin (server `mysql`, user/password ตาม `.env`) |
+| localhost:3321 | MySQL สำหรับโปรแกรมภายนอก |
 
-`app.py`:
-- reads the project's `.env` automatically,
-- connects to MySQL at `127.0.0.1` on `MYSQL_PORT` (3321),
-- creates the tables on start and seeds the default manufacturers (TOA, DELUX).
+`app.py` จะ:
+- อ่านไฟล์ `.env` ของโปรเจกต์ให้อัตโนมัติ
+- เชื่อม MySQL ที่ `127.0.0.1` พอร์ต `MYSQL_PORT` (3321)
+- สร้างตารางตอนเริ่มรัน และเพิ่มยี่ห้อเริ่มต้น (TOA, DELUX) ให้
 
-Variables you set yourself in the environment take precedence over `.env`.
+ค่าที่ตั้งไว้ใน environment ของเครื่องเองจะมีผลก่อนค่าใน `.env`
 
-`python app.py` runs Flask's development server in debug mode, which reloads when you edit code. Templates and static files are picked up on the next page load; there is nothing to build.
+`python app.py` รัน Flask development server แบบ debug ซึ่งจะรีโหลดเองเมื่อแก้โค้ด ส่วนเทมเพลตและไฟล์ static จะเห็นผลเมื่อรีเฟรชหน้าเว็บ ไม่ต้อง build อะไร
 
-Where data is stored:
-- **Images** are files in the `uploads/` folder of this project. MySQL stores only the file name (`house_images.image_path`), never the image data.
-- **Database** is in the Docker volume `mysql_data`.
+ข้อมูลเก็บไว้ที่ไหน:
+- **รูปภาพ** เป็นไฟล์อยู่ในโฟลเดอร์ `uploads/` ของโปรเจกต์ MySQL เก็บแค่ชื่อไฟล์ (`house_images.image_path`) ไม่เก็บตัวรูป
+- **ฐานข้อมูล** อยู่ใน Docker volume ชื่อ `mysql_data`
 
-Both survive `docker compose down` / `up`. `docker compose down -v` deletes the database volume, but the image files in `uploads/` stay. To back up, copy `uploads/` and dump the database.
+ทั้งสองอย่างยังอยู่หลัง `docker compose down` / `up` ส่วน `docker compose down -v` จะลบ volume ฐานข้อมูล แต่ไฟล์รูปใน `uploads/` ยังอยู่ ถ้าจะสำรองข้อมูล ให้ copy โฟลเดอร์ `uploads/` และ dump ฐานข้อมูล
 
-## Accounts
+## บัญชีผู้ใช้
 
-Every page, the API, the uploaded images and the Excel downloads need a login.
+ทุกหน้า, API, รูปที่อัปโหลด และไฟล์ Excel ต้องล็อกอินก่อน
 
-| Who | Username | Password | Can do |
-|-----|----------|----------|--------|
-| Administrator | `ADM` (fixed) | `ADMIN_PASSWORD` in `.env` (default `Test*123`) | Everything, plus the **Users** and **Manufacturers** menus |
-| User | 3 uppercase English letters, e.g. `ABC` | Their own | Everything except those two menus |
+| ใคร | ชื่อผู้ใช้ | รหัสผ่าน | ทำอะไรได้ |
+|-----|-----------|----------|-----------|
+| ผู้ดูแลระบบ | `ADM` (ตายตัว) | `ADMIN_PASSWORD` ใน `.env` (ค่าเริ่มต้น `Test*123`) | ทำได้ทุกอย่าง รวมถึงเมนู **Users** และ **Manufacturers** |
+| ผู้ใช้ทั่วไป | ตัวอักษรอังกฤษพิมพ์ใหญ่ 3 ตัว เช่น `ABC` | ตั้งเอง | ทุกอย่าง ยกเว้นสองเมนูข้างบน |
 
-- The administrator adds users on the **Users** page. A new user logs in with the default password (`DEFAULT_PASSWORD` in `.env`, default `Test*123`) and must set their own before using anything else.
-- A password needs at least 8 characters with an uppercase letter, a digit and a special character, and cannot be the default password.
-- **Reset password** on the Users page puts a user back on the default password (they set a new one at next login). **Disable** logs the user out and blocks the account until it is enabled again.
-- To change the administrator's password, edit `ADMIN_PASSWORD` in `.env` and restart `python app.py`.
-- Users do not see the Manufacturers menu, but a new manufacturer name typed in the color form is still saved for everyone.
+- ผู้ดูแลเพิ่มผู้ใช้ได้ที่หน้า **Users** ผู้ใช้ใหม่ล็อกอินด้วยรหัสเริ่มต้น (`DEFAULT_PASSWORD` ใน `.env` ค่าเริ่มต้น `Test*123`) แล้วต้องตั้งรหัสของตัวเองก่อนใช้งาน
+- รหัสผ่านต้องยาวอย่างน้อย 8 ตัว มีตัวพิมพ์ใหญ่ ตัวเลข และอักขระพิเศษ และห้ามซ้ำกับรหัสเริ่มต้น
+- **Reset password** ในหน้า Users จะตั้งรหัสผู้ใช้กลับเป็นรหัสเริ่มต้น (ผู้ใช้ต้องตั้งใหม่ตอนล็อกอินครั้งถัดไป) ส่วน **Disable** จะบังคับออกจากระบบและล็อกบัญชีจนกว่าจะเปิดใช้อีกครั้ง
+- เปลี่ยนรหัสผู้ดูแลได้โดยแก้ `ADMIN_PASSWORD` ใน `.env` แล้วรัน `python app.py` ใหม่
+- ผู้ใช้ทั่วไปไม่เห็นเมนู Manufacturers แต่ถ้าพิมพ์ชื่อยี่ห้อใหม่ในฟอร์มสี ชื่อนั้นจะถูกบันทึกให้ทุกคนใช้ได้
 
-## Environment variables (`.env`)
+## ตัวแปรใน `.env`
 
-| Variable | Default | Purpose |
-|----------|---------|---------|
-| `MYSQL_ROOT_PASSWORD` | – | MySQL root password |
-| `DB_NAME` / `DB_USER` / `DB_PASSWORD` | `house_colors` / `housecolor` / – | App database and credentials (used by MySQL and by `app.py`) |
-| `MYSQL_PORT` / `PMA_PORT` | 3321 / 8080 | Host ports of MySQL and phpMyAdmin |
-| `MAX_UPLOAD_MB` | 20 | Max upload size per request |
-| `SECRET_KEY` | – | Signs the login session; use a long random string |
-| `ADMIN_PASSWORD` | `Test*123` | Password of the administrator `ADM` |
-| `DEFAULT_PASSWORD` | `Test*123` | Password of new users and after a reset |
-| `DB_HOST` / `UPLOAD_FOLDER` | `127.0.0.1` / `uploads/` | Optional overrides |
+| ตัวแปร | ค่าเริ่มต้น | ใช้ทำอะไร |
+|--------|------------|-----------|
+| `MYSQL_ROOT_PASSWORD` | – | รหัส root ของ MySQL |
+| `DB_NAME` / `DB_USER` / `DB_PASSWORD` | `house_colors` / `housecolor` / – | ชื่อฐานข้อมูลและบัญชีที่แอปใช้ (ใช้ทั้งฝั่ง MySQL และ `app.py`) |
+| `MYSQL_PORT` / `PMA_PORT` | 3321 / 8080 | พอร์ตบนเครื่องของ MySQL และ phpMyAdmin |
+| `MAX_UPLOAD_MB` | 20 | ขนาดอัปโหลดสูงสุดต่อครั้ง |
+| `SECRET_KEY` | – | ใช้เซ็น session การล็อกอิน ควรเป็นข้อความสุ่มยาว ๆ |
+| `ADMIN_PASSWORD` | `Test*123` | รหัสผ่านของผู้ดูแล `ADM` |
+| `DEFAULT_PASSWORD` | `Test*123` | รหัสของผู้ใช้ใหม่และหลัง reset |
+| `DB_HOST` / `UPLOAD_FOLDER` | `127.0.0.1` / `uploads/` | ใช้เมื่อต้องการเปลี่ยนค่า (ไม่บังคับ) |
 
-The database credentials only take effect the first time the `mysql_data` volume is created. To change them later, change them inside MySQL as well, or recreate the volume.
+ค่าบัญชีฐานข้อมูลมีผลเฉพาะตอนสร้าง volume `mysql_data` ครั้งแรก ถ้าจะเปลี่ยนภายหลัง ต้องเปลี่ยนใน MySQL ด้วย หรือสร้าง volume ใหม่
 
-## Using it
+## วิธีใช้งาน
 
-1. Click **Add house**, enter a name and add one or more photos: upload files, press **Capture screen**, or paste a screenshot with Ctrl+V.
-2. On the house page, hover over the photo to see a magnified pixel preview, then click to pick a color. The form opens with that exact pixel's RGB value filled in.
-3. Fill in the color details:
-   - color name;
-   - manufacturing: pick TOA/DELUX, or type a new name, which is saved for next time;
-   - model: always stored in UPPERCASE;
-   - house.
+1. กด **Add house** ใส่ชื่อบ้าน แล้วเพิ่มรูปอย่างน้อยหนึ่งรูป ทำได้ 3 แบบ: อัปโหลดไฟล์, กด **Capture screen**, หรือวางภาพหน้าจอด้วย Ctrl+V
+2. ในหน้าบ้าน เลื่อนเมาส์บนรูปจะเห็นแว่นขยายพิกเซล คลิกเพื่อเลือกสี ฟอร์มจะเปิดขึ้นพร้อมค่า RGB ของพิกเซลนั้นพอดี
+3. กรอกรายละเอียดสี:
+   - ชื่อสี
+   - ยี่ห้อ: เลือก TOA/DELUX หรือพิมพ์ชื่อใหม่ ระบบจะจำไว้ใช้ครั้งต่อไป
+   - รุ่น: เก็บเป็นตัวพิมพ์ใหญ่เสมอ
+   - บ้าน
 
-   You can adjust the RGB value with the sliders, the number inputs, the native color picker or the HEX field.
+   ปรับค่า RGB ได้ทั้งจากแถบเลื่อน ช่องตัวเลข ตัวเลือกสีของเบราว์เซอร์ หรือช่อง HEX
 
-   For a new color, Manufacturing starts with the manufacturer of that house's latest color, so you choose it once per house. Change it whenever a color is from another brand.
-4. The **Dashboard** shows every house with its color swatches.
-   - Search covers color name, RGB (`200,180,150`, `200 180 150` or `RGB(200, 180`), HEX, manufacturing, model and house name.
-   - You can also filter by manufacturer.
-5. **Export all** (Dashboard / All Colors) downloads `House_Color_Database.xlsx`. **Export Excel** on a house page downloads `House_Color_<House_Name>.xlsx`.
-   - Columns: House Name, Color Name, RGB, HEX, Manufacturing, Model, Image Reference.
-   - The file is built on the server with openpyxl.
+   เมื่อเพิ่มสีใหม่ ช่องยี่ห้อจะตั้งเป็นยี่ห้อของสีล่าสุดของบ้านนั้นไว้ให้ จึงเลือกแค่ครั้งเดียวต่อบ้าน เปลี่ยนได้เมื่อสีนั้นเป็นยี่ห้ออื่น
+4. หน้า **Dashboard** แสดงบ้านทุกหลังพร้อมตัวอย่างสี
+   - ค้นหาได้จากชื่อสี, RGB (`200,180,150`, `200 180 150` หรือ `RGB(200, 180`), HEX, ยี่ห้อ, รุ่น และชื่อบ้าน
+   - กรองตามยี่ห้อได้
+5. **Export all** (หน้า Dashboard / All Colors) ดาวน์โหลดไฟล์ `House_Color_Database.xlsx` ส่วน **Export Excel** ในหน้าบ้านจะได้ไฟล์ `House_Color_<ชื่อบ้าน>.xlsx`
+   - คอลัมน์: House Name, Color Name, RGB, HEX, Manufacturing, Model, Image Reference
+   - สร้างไฟล์ฝั่งเซิร์ฟเวอร์ด้วย openpyxl
 
-### Working from the screen
-These need Chrome or Edge on this computer, opened at `http://localhost:5000` (browsers only allow them on `localhost` or HTTPS, and not on phones).
+### ดึงสีจากหน้าจอ
+ฟีเจอร์นี้ต้องใช้ Chrome หรือ Edge บนเครื่องนี้ และเปิดที่ `http://localhost:5000` (เบราว์เซอร์อนุญาตเฉพาะ `localhost` หรือ HTTPS และใช้บนมือถือไม่ได้)
 
-- **Pick from screen** (house page and color form): the pointer becomes an eyedropper. Click any pixel on the screen, also outside the browser, and the color form opens with that color. Esc cancels. A color picked this way has no image reference.
-- **Capture screen** (Add house page and house page): the browser asks which screen, window or tab to share; choose one and that picture is added to the house, ready to pick colors from. The browser always asks; this step cannot be skipped.
-- **Ctrl+V** on the Add house page or a house page adds an image from the clipboard. Take the screenshot first with Win+Shift+S (cut a region) or PrintScreen, then press Ctrl+V on the page. The page cannot see those keys being pressed, so the Ctrl+V step is needed.
+- **Pick from screen** (หน้าบ้านและฟอร์มสี): เมาส์จะกลายเป็นหลอดดูดสี คลิกพิกเซลไหนบนจอก็ได้ แม้อยู่นอกเบราว์เซอร์ ฟอร์มสีจะเปิดพร้อมสีนั้น กด Esc เพื่อยกเลิก สีที่ได้วิธีนี้จะไม่มีรูปอ้างอิง
+- **Capture screen** (หน้า Add house และหน้าบ้าน): เบราว์เซอร์จะถามว่าจะแชร์จอ หน้าต่าง หรือแท็บไหน เลือกแล้วภาพนั้นจะถูกเพิ่มเข้าบ้าน พร้อมให้เลือกสี (เบราว์เซอร์ถามทุกครั้ง ข้ามขั้นนี้ไม่ได้)
+- **Ctrl+V** ในหน้า Add house หรือหน้าบ้าน จะเพิ่มรูปจาก clipboard ให้จับภาพหน้าจอก่อนด้วย Win+Shift+S (ตัดบางส่วน) หรือ PrintScreen แล้วกด Ctrl+V บนหน้าเว็บ (หน้าเว็บมองไม่เห็นการกดปุ่มจับภาพ จึงต้องกด Ctrl+V เอง)
 
-### How the pixel picking works
-The image is drawn onto a `<canvas>` at its natural resolution. The click position is mapped from display coordinates back to source pixels, and `getImageData(x, y, 1, 1)` reads that single pixel, so the value is exact even when the image is shown scaled down. Images are served by Flask from the same origin, so the canvas is never "tainted".
+### การดึงค่าพิกเซลทำงานอย่างไร
+รูปจะถูกวาดลง `<canvas>` ที่ความละเอียดจริงของรูป ตำแหน่งที่คลิกบนจอจะถูกแปลงกลับเป็นพิกัดพิกเซลของรูปต้นฉบับ แล้วใช้ `getImageData(x, y, 1, 1)` อ่านค่าพิกเซลเดียว ค่าที่ได้จึงตรงเป๊ะแม้รูปจะแสดงแบบย่อ และเพราะ Flask ส่งรูปมาจาก origin เดียวกัน canvas จึงไม่ถูก "taint"
 
-## Project layout
+## โครงสร้างโปรเจกต์
 
 ```
 house-color-manager/
-  app.py             all routes: pages, JSON API, uploads, Excel export, validation
-  models.py          SQLAlchemy models
+  app.py             route ทั้งหมด: หน้าเว็บ, JSON API, อัปโหลด, export Excel, ตรวจสอบข้อมูล
+  models.py          โมเดล SQLAlchemy
   requirements.txt
-  templates/         Jinja pages (Flask fills in data on the server)
-    base.html          layout + sidebar
-    macros.html        swatch, chips, sort headers, pagination
+  templates/         หน้า Jinja (Flask เติมข้อมูลฝั่งเซิร์ฟเวอร์)
+    base.html          layout + แถบเมนูข้าง
+    macros.html        swatch, chips, หัวตารางเรียงลำดับ, แบ่งหน้า
     dashboard.html, colors.html, house_detail.html, add_house.html, manufacturers.html, error.html
-    _color_table.html  shared color table
-  static/            files sent to the browser as-is
+    _color_table.html  ตารางสีที่ใช้ร่วมกัน
+  static/            ไฟล์ที่ส่งให้เบราว์เซอร์ตรง ๆ
     css/styles.css
-    js/              ui.js (toasts, modal, confirm), api.js, color.js,
+    js/              ui.js (toast, modal, confirm), api.js, color.js,
                      picker.js, color_form.js, manufacturer_select.js, dropzone.js,
                      house_detail.js, add_house.js, colors_page.js, manufacturers.js, color_actions.js
-  tests/             pytest (in-memory SQLite, no MySQL needed)
-  uploads/           image files
-  docker-compose.yml MySQL + phpMyAdmin only
-  .env               settings (not committed)
+  tests/             pytest (ใช้ SQLite ในหน่วยความจำ ไม่ต้องมี MySQL)
+  uploads/           ไฟล์รูป
+  docker-compose.yml MySQL + phpMyAdmin เท่านั้น
+  .env               ค่าตั้งค่า (ไม่ commit)
 ```
 
-### Pages
+### หน้าเว็บ
 
-| Path | Page |
+| Path | หน้า |
 |------|------|
 | `/` | Dashboard (`?q=&manufacturer=&view=cards\|table&sort=&order=&page=&per_page=`) |
-| `/houses/new` | Add house |
-| `/houses/<id>` | House details, picker, colors (`?image=<id>&sort=&order=`) |
-| `/colors` | All colors (`?q=&manufacturer=&sort=&order=&page=&per_page=`) |
-| `/manufacturers` | Manufacturers (administrator only) |
-| `/users` | Users (administrator only) |
-| `/login`, `/change-password` | Log in; set or change your own password |
-| `/export.xlsx`, `/houses/<id>/export.xlsx` | Excel downloads |
+| `/houses/new` | เพิ่มบ้าน |
+| `/houses/<id>` | รายละเอียดบ้าน, ตัวเลือกสี, รายการสี (`?image=<id>&sort=&order=`) |
+| `/colors` | สีทั้งหมด (`?q=&manufacturer=&sort=&order=&page=&per_page=`) |
+| `/manufacturers` | ยี่ห้อ (ผู้ดูแลเท่านั้น) |
+| `/users` | ผู้ใช้ (ผู้ดูแลเท่านั้น) |
+| `/login`, `/change-password` | ล็อกอิน, ตั้งหรือเปลี่ยนรหัสผ่านของตัวเอง |
+| `/export.xlsx`, `/houses/<id>/export.xlsx` | ดาวน์โหลด Excel |
 
-Search, filter, sort and pagination are plain GET parameters handled on the server. The JavaScript only handles the interactive parts: the picker, forms, uploads and deletes. Those parts call the JSON API below.
+การค้นหา กรอง เรียงลำดับ และแบ่งหน้า ใช้ GET parameter ธรรมดาและประมวลผลฝั่งเซิร์ฟเวอร์ JavaScript ดูแลเฉพาะส่วนที่ต้องโต้ตอบ ได้แก่ ตัวเลือกสี ฟอร์ม การอัปโหลด และการลบ ซึ่งเรียกผ่าน JSON API ด้านล่าง
 
-## Tests
+## รันเทสต์
 
 ```powershell
 python -m pytest tests -q
 ```
 
-## Database schema
+## โครงสร้างฐานข้อมูล
 
 ```
 houses        id, house_name (unique), created_at, updated_at
@@ -168,43 +169,43 @@ colors        id, house_id → houses (CASCADE), image_id → house_images (SET 
               color_name, rgb ("RGB(r, g, b)"), hex ("#RRGGBB"), manufacturing, model,
               created_at, updated_at
 manufacturers id, name (unique), is_default, created_at
-users         id, username (3 letters, unique), full_name, role (admin/user), password_hash,
+users         id, username (3 ตัวอักษร, unique), full_name, role (admin/user), password_hash,
               must_change_password, active, created_at
 ```
 
-- One house can have many images and many colors.
-- Deleting an image keeps its colors but clears their image reference.
-- Deleting a house removes its images (rows and files in `uploads/`) and its colors.
+- บ้านหนึ่งหลังมีได้หลายรูปและหลายสี
+- ลบรูปแล้ว สีที่อ้างถึงรูปนั้นยังอยู่ แค่ไม่มีรูปอ้างอิง
+- ลบบ้านจะลบรูปทั้งหมดของบ้าน (ทั้งข้อมูลและไฟล์ใน `uploads/`) และสีทั้งหมดของบ้านนั้น
 
 ## JSON API
 
-| Method | Path | Notes |
-|--------|------|-------|
+| Method | Path | หมายเหตุ |
+|--------|------|----------|
 | GET | `/api/health`, `/api/stats` | |
-| GET | `/api/houses?q=&manufacturer=` | Houses with images and colors; includes `matched_color_ids` when filtered |
-| POST | `/api/houses` | JSON `{house_name}` or multipart `house_name` + `images[]` |
+| GET | `/api/houses?q=&manufacturer=` | บ้านพร้อมรูปและสี มี `matched_color_ids` เมื่อมีการกรอง |
+| POST | `/api/houses` | JSON `{house_name}` หรือ multipart `house_name` + `images[]` |
 | GET/PUT/DELETE | `/api/houses/:id` | |
 | POST | `/api/houses/:id/images` | multipart `images[]` |
 | DELETE | `/api/images/:id` | |
 | GET | `/api/colors?q=&manufacturer=&house_id=&sort=&order=&page=&per_page=` | |
 | POST | `/api/colors` | `{color_name, r,g,b \| rgb \| hex, manufacturing, model, house_id \| house_name, image_id?}` |
 | GET/PUT/DELETE | `/api/colors/:id` | |
-| GET/POST | `/api/manufacturers` | POST is administrator only |
-| DELETE | `/api/manufacturers/:id` | Custom manufacturers only, and only when no color uses them |
-| GET | `/api/export[?house_id=]` | Export rows as JSON |
-| GET | `/uploads/:file` | Uploaded images |
-| GET/POST | `/api/users` | Administrator only. POST `{username, full_name}` |
-| PUT | `/api/users/:id` | Administrator only. `{full_name?, active?}` |
-| POST | `/api/users/:id/reset-password` | Administrator only |
+| GET/POST | `/api/manufacturers` | POST เฉพาะผู้ดูแล |
+| DELETE | `/api/manufacturers/:id` | ลบได้เฉพาะยี่ห้อที่เพิ่มเอง และต้องไม่มีสีใดใช้อยู่ |
+| GET | `/api/export[?house_id=]` | ข้อมูล export เป็น JSON |
+| GET | `/uploads/:file` | รูปที่อัปโหลด |
+| GET/POST | `/api/users` | เฉพาะผู้ดูแล POST `{username, full_name}` |
+| PUT | `/api/users/:id` | เฉพาะผู้ดูแล `{full_name?, active?}` |
+| POST | `/api/users/:id/reset-password` | เฉพาะผู้ดูแล |
 
-Every call needs a logged-in session (`401` otherwise), and every call that changes data needs the `X-CSRF-Token` header (the value is in the page's `<meta name="csrf-token">`; `static/js/api.js` sends it). Administrator-only calls return `403` for users.
+ทุก API ต้องล็อกอินก่อน (ไม่งั้นได้ `401`) และ API ที่เปลี่ยนข้อมูลต้องส่ง header `X-CSRF-Token` (ค่าอยู่ใน `<meta name="csrf-token">` ของหน้าเว็บ และ `static/js/api.js` ส่งให้อัตโนมัติ) API ที่เป็นของผู้ดูแลจะตอบ `403` ถ้าผู้ใช้ทั่วไปเรียก
 
-Validation errors return `422 {error, fields: {field: message}}`. Unknown `/api/...` paths return JSON errors; unknown pages return an HTML error page.
+ข้อมูลไม่ถูกต้องจะได้ `422 {error, fields: {field: message}}` ส่วน path `/api/...` ที่ไม่มีอยู่จะตอบเป็น JSON error และหน้าเว็บที่ไม่มีอยู่จะแสดงหน้า error แบบ HTML
 
-## Upload security
-- Only these extensions are allowed: png, jpg/jpeg, webp, gif, bmp.
-- Pillow checks the actual file content, not just the extension.
-- There is a size limit (`MAX_UPLOAD_MB`).
-- Files get random UUID names, and path traversal is blocked when serving them.
-- Image bytes are never stored in MySQL.
-- User text is always escaped: Jinja autoescape in templates, `textContent` in JavaScript.
+## ความปลอดภัยของการอัปโหลด
+- รับเฉพาะนามสกุล png, jpg/jpeg, webp, gif, bmp
+- ใช้ Pillow ตรวจเนื้อไฟล์จริง ไม่ได้ดูแค่นามสกุล
+- จำกัดขนาดไฟล์ (`MAX_UPLOAD_MB`)
+- ตั้งชื่อไฟล์ใหม่แบบสุ่ม (UUID) และกัน path traversal ตอนส่งไฟล์
+- ไม่เก็บตัวรูปใน MySQL
+- ข้อความจากผู้ใช้ถูก escape เสมอ: Jinja autoescape ในเทมเพลต และ `textContent` ใน JavaScript
